@@ -8,12 +8,22 @@ from langchain_core.prompts import PromptTemplate
 from youtube_transcript_api import YouTubeTranscriptApi
 from langchain_core.runnables import RunnableParallel, RunnableLambda, RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
+from langchain_groq import ChatGroq
+from langchain_community.vectorstores import FAISS
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
 video_id = "cetjOddL6pg"
+url = "https://www.youtube.com/watch?v=4b7fKbIPHPA"
+def vid_id(url):
+    id = url.split("=")[1].split("&")[0]
+    return id
+
+id = vid_id(url)
+print(id)
+
 
 try:
   ytt_api = YouTubeTranscriptApi()
@@ -35,7 +45,7 @@ print(len(chunks))
 
 embeddings = HuggingFaceEmbeddings( model="BAAI/bge-small-en-v1.5")
 
-from langchain_community.vectorstores import FAISS
+
 vector_store = FAISS.from_documents(
     embedding= embeddings,
     documents=chunks
@@ -67,7 +77,7 @@ prompt = PromptTemplate(
     input_variables=['context', 'question']
 )
 
-from langchain_groq import ChatGroq
+
 
 llm = ChatGroq(
     model="llama-3.3-70b-versatile",
