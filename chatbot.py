@@ -5,7 +5,6 @@ from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.prompts import PromptTemplate
-from youtube_transcript_api import YouTubeTranscriptApi
 from langchain_core.runnables import RunnableParallel, RunnableLambda, RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 from langchain_groq import ChatGroq
@@ -40,7 +39,6 @@ chunks = splitter.create_documents([transcript])
 
 embeddings = HuggingFaceEmbeddings( model="BAAI/bge-small-en-v1.5")
 
-
 vector_store = FAISS.from_documents(
     embedding= embeddings,
     documents=chunks
@@ -58,7 +56,7 @@ def format_docs(content):
 
 prompt = PromptTemplate(
     template="""
-    You are a helpfull yt video chatbot
+    You are a helpful Youtube video chatbot
     Answer only from the provided transcript context
     If the context is insufficeint then simply say i dont know
 
