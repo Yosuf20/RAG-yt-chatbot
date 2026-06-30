@@ -12,24 +12,21 @@ from langchain_groq import ChatGroq
 from langchain_community.vectorstores import FAISS
 import os
 from dotenv import load_dotenv
-
 load_dotenv()
 
-video_id = "cetjOddL6pg"
+
 url = "https://www.youtube.com/watch?v=4b7fKbIPHPA"
-def vid_id(url):
-    id = url.split("=")[1].split("&")[0]
-    return id
 
-id = vid_id(url)
-print(id)
 
+def vid_id(url : str) -> str:
+    video_id = url.split("=")[1].split("&")[0]
+    return video_id
 
 try:
   ytt_api = YouTubeTranscriptApi()
 
   transcript_list = ytt_api.fetch(
-      video_id,
+      video_id = vid_id(url),
       languages=['en']
       )
   transcript = " ".join(chunk.text for chunk in transcript_list)
@@ -37,11 +34,9 @@ except:
   print("No caption available")
 
 
+
 splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
 chunks = splitter.create_documents([transcript])
-
-print(len(chunks))
-
 
 embeddings = HuggingFaceEmbeddings( model="BAAI/bge-small-en-v1.5")
 
@@ -52,18 +47,14 @@ vector_store = FAISS.from_documents(
 
 )
 
-vector_store.index_to_docstore_id
-
 retriever = vector_store.as_retriever(
     search_type='similarity',
     search_kwargs={'k':4}
 )
 
-
 def format_docs(content):
   context_text = "\n\n".join(doc.page_content for doc in content)
   return context_text
-
 
 prompt = PromptTemplate(
     template="""
@@ -77,15 +68,10 @@ prompt = PromptTemplate(
     input_variables=['context', 'question']
 )
 
-
-
 llm = ChatGroq(
     model="llama-3.3-70b-versatile",
     api_key=os.getenv("GROQ_API_KEY")
 )
-
-
-
 
 parallel_chain = RunnableParallel({
     'context' : retriever | RunnableLambda(format_docs),
