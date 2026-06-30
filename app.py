@@ -35,7 +35,7 @@ if prompt:
     st.session_state.messages.append({"role" : "user", "content" : prompt})
 
     with st.chat_message("assistant"):
-        res = st.write_stream(responce_generator())
+        res = st.write_stream(response_generator())
         st.session_state.messages.append({"role" : "assistant" , "content" : res})
 
 
