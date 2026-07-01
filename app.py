@@ -9,8 +9,7 @@ st.title("Youtube Chatbot")
 url = st.sidebar.text_input("Enter Youtube Video Link", type="default")
 Key = st.sidebar.text_input("API KEY", type="password")
 
-if Key is None:
-    st.
+
 
 if url:
     if not Key:
