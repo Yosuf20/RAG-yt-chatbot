@@ -25,3 +25,5 @@ docs = loader.load()
 chain = prompt | model | parser
 
 print(chain.invoke({'poem' : docs[0].page_content}))
+
+print

@@ -21,64 +21,84 @@ def vid_id(url : str) -> str:
     video_id = url.split("=")[1].split("&")[0]
     return video_id
 
-try:
-  ytt_api = YouTubeTranscriptApi()
+def get_transcript(url : str) -> str | None:
+    try:
+        ytt_api = YouTubeTranscriptApi()
 
-  transcript_list = ytt_api.fetch(
-      video_id = vid_id(url),
-      languages=['en']
-      )
-  transcript = " ".join(chunk.text for chunk in transcript_list)
-except:
-  print("No caption available")
+        transcript_list = ytt_api.fetch(
+            video_id = vid_id(url),
+            languages=['en']
+            )
+        transcript = " ".join(chunk.text for chunk in transcript_list)
+        return transcript
+    except:
+        print("No caption available")
+
+
+def load_chain(url: str):
+    
+    transcript = get_transcript(url)
+    if transcript is None:
+        return None
+    
+    splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+    chunks = splitter.create_documents([transcript])
+
+    embeddings = HuggingFaceEmbeddings( model="BAAI/bge-small-en-v1.5")
+
+    vector_store = FAISS.from_documents(
+        embedding= embeddings,
+        documents=chunks
+
+    )
+
+    retriever = vector_store.as_retriever(
+        search_type='similarity',
+        search_kwargs={'k':4}
+    )
+
+    prompt = PromptTemplate(
+        template="""
+        You are a helpful Youtube video chatbot
+        Answer only from the provided transcript context
+        If the context is insufficeint then simply say i dont know
+
+        {context}
+        Question: {question}
+        """,
+        input_variables=['context', 'question']
+    )
+
+    llm = ChatGroq(
+        model="llama-3.3-70b-versatile",
+        api_key=os.getenv("GROQ_API_KEY")
+    )
+
+    def format_docs(content):
+        context_text = "\n\n".join(doc.page_content for doc in content)
+        return context_text
+
+    parallel_chain = RunnableParallel({
+        'context' : retriever | RunnableLambda(format_docs),
+        'question' : RunnablePassthrough()
+    })
+
+    parser = StrOutputParser()
+   
+    chain = parallel_chain | prompt | llm 
+
+    return chain
+
+
+def get_response(question : str, chain) -> str:
+   respon = chain.invoke(question)
+   return respon.content
+
+chain =  load_chain("https://www.youtube.com/watch?v=4b7fKbIPHPA")
+answer = get_response("What is the video about", chain)
+
+print(answer)
 
 
 
-splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
-chunks = splitter.create_documents([transcript])
-
-embeddings = HuggingFaceEmbeddings( model="BAAI/bge-small-en-v1.5")
-
-vector_store = FAISS.from_documents(
-    embedding= embeddings,
-    documents=chunks
-
-)
-
-retriever = vector_store.as_retriever(
-    search_type='similarity',
-    search_kwargs={'k':4}
-)
-
-def format_docs(content):
-  context_text = "\n\n".join(doc.page_content for doc in content)
-  return context_text
-
-prompt = PromptTemplate(
-    template="""
-    You are a helpful Youtube video chatbot
-    Answer only from the provided transcript context
-    If the context is insufficeint then simply say i dont know
-
-    {context}
-    Question: {question}
-    """,
-    input_variables=['context', 'question']
-)
-
-llm = ChatGroq(
-    model="llama-3.3-70b-versatile",
-    api_key=os.getenv("GROQ_API_KEY")
-)
-
-parallel_chain = RunnableParallel({
-    'context' : retriever | RunnableLambda(format_docs),
-    'question' : RunnablePassthrough()
-})
-
-parser = StrOutputParser()
-
-chain = parallel_chain | prompt | llm | parser
-
-print(chain.invoke('On which they are currently working'))
 

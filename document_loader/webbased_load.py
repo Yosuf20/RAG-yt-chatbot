@@ -18,7 +18,7 @@ model = ChatGroq(
 )
 
 promt = PromptTemplate(
-    template="Answer the following question \n {question} from the following text -\n {text}",
+    template="Answer the following question \n {text} from the following text -\n {text}",
     input_variables=["question","text"]
 )
 
