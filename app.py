@@ -9,11 +9,9 @@ st.title("Youtube Chatbot")
 url = st.sidebar.text_input("Enter Youtube Video Link", type="default")
 Key = st.sidebar.text_input("API KEY", type="password")
 
-
-
 if url:
     if not Key:
-        st.sidebar.warning("Please Enter API KEY")
+        st.sidebar.warning("Please enter your Groq API KEY")
     else:
         if st.session_state.get("loaded_url") != url:
             with st.spinner("Loading video transcript..."):
@@ -27,14 +25,12 @@ if url:
                 st.sidebar.success("Ready!")
 
 
-
 def response_generator(ques, chain):
     response = get_response(ques, chain)
     for word in response.split():
         yield word + " "
         time.sleep(0.05)
     
-
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -56,4 +52,3 @@ if prompt:
     with st.chat_message("assistant"):
         res = st.write_stream(response_generator(prompt, st.session_state.chain))
         st.session_state.messages.append({"role" : "assistant" , "content" : res})
-
