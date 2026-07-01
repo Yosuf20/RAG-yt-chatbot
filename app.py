@@ -7,17 +7,25 @@ from chatbot import load_chain, get_response
 st.title("Youtube Chatbot")
 
 url = st.sidebar.text_input("Enter Youtube Video Link", type="default")
+Key = st.sidebar.text_input("API KEY", type="password")
+
+if Key is None:
+    st.
 
 if url:
-    if st.session_state.get("loaded_url") != url:
-        chain = load_chain(url)
-        if chain == None:
-            print("No Transcript Found")
-        else:
-            st.session_state.loaded_url = url
-            st.session_state.message = []
-            st.session_state.chain = chain
-            st.sidebar.success("Ready!")
+    if not Key:
+        st.sidebar.warning("Please Enter API KEY")
+    else:
+        if st.session_state.get("loaded_url") != url:
+            with st.spinner("Loading video transcript..."):
+                chain = load_chain(url, Key)
+            if chain is None:
+                print("No Transcript Found")
+            else:
+                st.session_state.loaded_url = url
+                st.session_state.message = []
+                st.session_state.chain = chain
+                st.sidebar.success("Ready!")
 
 
 
@@ -49,11 +57,4 @@ if prompt:
     with st.chat_message("assistant"):
         res = st.write_stream(response_generator(prompt, st.session_state.chain))
         st.session_state.messages.append({"role" : "assistant" , "content" : res})
-
-
-# Side bar
-API_KEY = st.sidebar.text_input("API KEY", type="password")
-
-
-
 

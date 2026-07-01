@@ -14,12 +14,27 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-url = "https://www.youtube.com/watch?v=4b7fKbIPHPA"
 
 
 def vid_id(url : str) -> str:
     video_id = url.split("=")[1].split("&")[0]
     return video_id
+
+def get_llm(api : str):
+    if api:
+        llm = ChatGroq(
+        model="llama-3.3-70b-versatile",
+        api_key=api
+        )
+        return llm
+    else:
+        llm = ChatGroq(
+        model="llama-3.3-70b-versatile",
+        api_key=os.getenv("GROQ_API_KEY")
+        )
+    
+    
+
 
 def get_transcript(url : str) -> str | None:
     try:
@@ -35,7 +50,7 @@ def get_transcript(url : str) -> str | None:
         print("No caption available")
 
 
-def load_chain(url: str):
+def load_chain(url: str, API_KEY : str | None):
     
     transcript = get_transcript(url)
     if transcript is None:
@@ -69,10 +84,7 @@ def load_chain(url: str):
         input_variables=['context', 'question']
     )
 
-    llm = ChatGroq(
-        model="llama-3.3-70b-versatile",
-        api_key=os.getenv("GROQ_API_KEY")
-    )
+    llm = get_llm(API_KEY)
 
     def format_docs(content):
         context_text = "\n\n".join(doc.page_content for doc in content)
@@ -94,10 +106,8 @@ def get_response(question : str, chain) -> str:
    respon = chain.invoke(question)
    return respon.content
 
-chain =  load_chain("https://www.youtube.com/watch?v=4b7fKbIPHPA")
-answer = get_response("What is the video about", chain)
 
-print(answer)
+
 
 
 
