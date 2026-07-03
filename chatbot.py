@@ -45,6 +45,17 @@ def verify_key(key : str) -> bool:
     except Exception as e:
         return False
     
+def validate_url(url : str) -> bool:
+    try:
+        yt = YouTubeTranscriptApi()
+        trans_list = yt.fetch(
+            video_id=vid_id(url),
+            languages=['en']
+        )
+        return True
+    except Exception as e:
+        return False
+    
 
 def get_transcript(url : str) -> str | None:
     try:
