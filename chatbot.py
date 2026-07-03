@@ -33,8 +33,18 @@ def get_llm(api : str):
         api_key=os.getenv("GROQ_API_KEY")
         )
     
+def verify_key(key : str) -> bool:
+    try:
+        llm = ChatGroq(
+            model="llama-3.3-70b-versatile",
+            api_key=key,
+            max_tokens=1
+        )
+        llm.invoke("Hello")
+        return True
+    except Exception as e:
+        return False
     
-
 
 def get_transcript(url : str) -> str | None:
     try:

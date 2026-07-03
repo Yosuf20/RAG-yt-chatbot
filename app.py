@@ -1,7 +1,7 @@
 import streamlit as st
 import random
 import time
-from chatbot import load_chain, get_response
+from chatbot import load_chain, get_response, verify_key
 
 
 st.title("Youtube Chatbot")
@@ -14,15 +14,19 @@ if url:
         st.sidebar.warning("Please enter your Groq API KEY")
     else:
         if st.session_state.get("loaded_url") != url:
-            with st.spinner("Loading video transcript..."):
-                chain = load_chain(url, Key)
-            if chain is None:
-                print("No Transcript Found")
-            else:
-                st.session_state.loaded_url = url
-                st.session_state.message = []
-                st.session_state.chain = chain
-                st.sidebar.success("Ready!")
+            with st.spinner("Verifying API KEY..."):
+                if not verify_key(Key):
+                    st.sidebar.error("Invalid API Key. Pls Enter a Valid API KEY")
+                else:
+                    with st.spinner("Loading video transcript..."):
+                        chain = load_chain(url, Key)
+                    if chain is None:
+                        print("No Transcript Found")
+                    else:
+                        st.session_state.loaded_url = url
+                        st.session_state.message = []
+                        st.session_state.chain = chain
+                        st.sidebar.success("Ready!")
 
 
 def response_generator(ques, chain):
