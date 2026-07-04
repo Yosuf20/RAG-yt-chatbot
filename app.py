@@ -10,27 +10,25 @@ url = st.sidebar.text_input("Enter Youtube Video Link", type="default")
 Key = st.sidebar.text_input("API KEY", type="password")
 
 if url:
-    if not Key:
-        st.sidebar.warning("Please enter your Groq API KEY")
-    else:
-        if st.session_state.get("loaded_url") != url:
-            with st.sidebar.spinner("Verifying API KEY..."):
-                if not verify_key(Key):
-                    st.sidebar.error("Invalid API Key. Pls Enter a Valid API KEY")
-                else:
-                    with st.sidebar.spinner("Verifying Yt URL..."):
-                        if not validate_url(url):
-                            st.sidebar.error("Invalid Youtube Link. Pls Enter a Valid URL")
-                        else:
-                            with st.spinner("Loading Transcript"):
-                                chain = load_chain(url, Key)
-                                if chain is None:
-                                    print("No Transcript Found")
-                                else:
-                                    st.session_state.loaded_url = url
-                                    st.session_state.message = []
-                                    st.session_state.chain = chain
-                                    st.sidebar.success("Ready!")
+    if st.session_state.get("loaded_url") != url:
+        with st.sidebar.spinner("Verifying Yt URL..."):
+            if not validate_url(url):
+                st.sidebar.error("Invalid Youtube Link. Pls Enter a Valid URL")
+            else:
+                with st.spinner("Loading Transcript"):
+                    chain = load_chain(url, Key)
+                    if chain is None:
+                        print("No Transcript Found")
+                    else:
+                        st.session_state.loaded_url = url
+                        st.session_state.message = []
+                        st.session_state.chain = chain
+                        st.sidebar.success("Ready!")
+
+if Key:
+    with st.sidebar.spinner("Verifying API KEY..."):
+        if not verify_key(Key):
+            st.sidebar.error("Enter a Valid API Key")
 
 
 def response_generator(ques, chain):
