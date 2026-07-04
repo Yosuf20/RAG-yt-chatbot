@@ -20,7 +20,7 @@ def vid_id(url : str) -> str:
     video_id = url.split("=")[1].split("&")[0]
     return video_id
 
-def get_llm(api : str):
+def get_llm(api : str | None = None):
     if api:
         llm = ChatGroq(
         model="llama-3.3-70b-versatile",
@@ -72,7 +72,7 @@ def get_transcript(url : str) -> str | None:
         print("No caption available")
 
 
-def load_chain(url: str, API_KEY : str ):
+def load_chain(url: str, API_KEY : str | None = None):
     
     transcript = get_transcript(url)
     if transcript is None:
