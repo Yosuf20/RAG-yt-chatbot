@@ -32,6 +32,7 @@ def get_llm(api : str):
         model="llama-3.3-70b-versatile",
         api_key=os.getenv("GROQ_API_KEY")
         )
+        return llm
     
 def verify_key(key : str) -> bool:
     try:
@@ -71,7 +72,7 @@ def get_transcript(url : str) -> str | None:
         print("No caption available")
 
 
-def load_chain(url: str, API_KEY : str | None):
+def load_chain(url: str, API_KEY : str ):
     
     transcript = get_transcript(url)
     if transcript is None:
