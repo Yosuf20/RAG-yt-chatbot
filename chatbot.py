@@ -50,6 +50,7 @@ def verify_key(key : str) -> bool:
         llm.invoke("Hello")
         return True
     except Exception as e:
+        print(f"Error : {e}")
         return False
     
 def validate_url(url : str) -> bool:
