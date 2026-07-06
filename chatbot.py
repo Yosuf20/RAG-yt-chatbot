@@ -9,10 +9,16 @@ from langchain_core.runnables import RunnableParallel, RunnableLambda, RunnableP
 from langchain_core.output_parsers import StrOutputParser
 from langchain_groq import ChatGroq
 from langchain_community.vectorstores import FAISS
+from curl_cffi import requests as curl_requests
 import os
 from dotenv import load_dotenv
 load_dotenv()
 
+
+
+def get_yt_client():
+    session = curl_requests.Session(impersonate="chrome")
+    return YouTubeTranscriptApi(http_client=session)
 
 
 
@@ -48,7 +54,7 @@ def verify_key(key : str) -> bool:
     
 def validate_url(url : str) -> bool:
     try:
-        yt = YouTubeTranscriptApi()
+        yt = get_yt_client()
         trans_list = yt.fetch(
             video_id=vid_id(url),
             languages=['en']
@@ -60,7 +66,7 @@ def validate_url(url : str) -> bool:
 
 def get_transcript(url : str) -> str | None:
     try:
-        ytt_api = YouTubeTranscriptApi()
+        ytt_api = get_yt_client()
 
         transcript_list = ytt_api.fetch(
             video_id = vid_id(url),
