@@ -11,6 +11,7 @@ from langchain_groq import ChatGroq
 from langchain_community.vectorstores import FAISS
 from curl_cffi import requests as curl_requests
 import os
+from langchain_ollama import ChatOllama
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -27,24 +28,19 @@ def vid_id(url : str) -> str:
     return video_id
 
 def get_llm(api : str | None = None):
-    if api:
-        llm = ChatGroq(
-        model="llama-3.3-70b-versatile",
-        api_key=api
-        )
-        return llm
-    else:
-        llm = ChatGroq(
-        model="llama-3.3-70b-versatile",
-        api_key=os.getenv("GROQ_API_KEY")
+        llm = ChatOllama(
+        model="qwen3:4b",
+        temperature = 0.7,
+        think = False,
+        num_ctx=2048,
+        repeat_penalty=1.1
         )
         return llm
     
 def verify_key(key : str) -> bool:
     try:
-        llm = ChatGroq(
-            model="llama-3.3-70b-versatile",
-            api_key=key,
+        llm = ChatOllama(
+            model="qwen4:4b",
             max_tokens=1
         )
         llm.invoke("Hello")
@@ -85,7 +81,7 @@ def load_chain(url: str, API_KEY : str | None = None):
     if transcript is None:
         return None
     
-    splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+    splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=200)
     chunks = splitter.create_documents([transcript])
 
     embeddings = HuggingFaceEmbeddings( model="BAAI/bge-small-en-v1.5")
