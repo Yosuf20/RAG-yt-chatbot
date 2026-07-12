@@ -120,13 +120,17 @@ def load_chain(url: str, API_KEY : str | None = None):
         'question' : RunnablePassthrough()
     })
 
+    
     parser = StrOutputParser()
    
     chain = parallel_chain | prompt | llm 
 
-    return chain
+    retrieve = parallel_chain
+    return chain, retrieve
 
 
-def get_response(question : str, chain) -> str:
+def get_response(question : str, chain, retrive) -> str:
    respon = chain.invoke(question)
+
+   print(retrive.invoke(question))
    return respon.content

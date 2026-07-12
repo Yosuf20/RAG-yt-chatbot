@@ -20,7 +20,7 @@ if url:
 
         else:
             with st.spinner("Loading Transcript"):
-                chain = load_chain(url)
+                chain, retrieve = load_chain(url)
 
             if chain is None:
                 print("No Transcript Found")
@@ -28,11 +28,12 @@ if url:
                 st.session_state.loaded_url = url
                 st.session_state.messages = []
                 st.session_state.chain = chain
+                st.session_state.retrieve = retrieve
                 st.sidebar.success("Ready!")
 
 
-def response_generator(ques, chain):
-    response = get_response(ques, chain)
+def response_generator(ques, chain, retrieve):
+    response = get_response(ques, chain, retrieve)
     for word in response.split():
         yield word + " "
         time.sleep(0.05)
@@ -56,5 +57,5 @@ if prompt:
         st.session_state.messages.append({"role" : "user", "content" : prompt})
 
     with st.chat_message("assistant"):
-        res = st.write_stream(response_generator(prompt, st.session_state.chain))
+        res = st.write_stream(response_generator(prompt, st.session_state.chain, st.session_state.retrieve))
         st.session_state.messages.append({"role" : "assistant" , "content" : res})
