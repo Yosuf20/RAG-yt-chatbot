@@ -1,6 +1,5 @@
 
 # !pip install langchain faiss-cpu tiktoken langchain_huggingface langchain_community langchain-core -q youtube-transcript-api python-dotenv langchain_groq
-
 from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -18,7 +17,7 @@ load_dotenv()
 
 
 def get_yt_client():
-    session = curl_requests.Session(impersonate="chrome")
+    session = curl_requests.Session(impersonate="chrome110")
     return YouTubeTranscriptApi(http_client=session)
 
 
@@ -30,7 +29,7 @@ def vid_id(url : str) -> str:
 def get_llm(api : str | None = None):
         llm = ChatOllama(
         model="qwen3:4b",
-        temperature = 0.7,
+        temperature = 2.0,
         think = False,
         num_ctx=2048,
         repeat_penalty=1.1
@@ -58,6 +57,7 @@ def validate_url(url : str) -> bool:
         )
         return True
     except Exception as e:
+        print(f"Error : {e}")
         return False
     
 
@@ -130,10 +130,3 @@ def load_chain(url: str, API_KEY : str | None = None):
 def get_response(question : str, chain) -> str:
    respon = chain.invoke(question)
    return respon.content
-
-
-
-
-
-
-
