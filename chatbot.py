@@ -13,6 +13,7 @@ import os
 from langchain_ollama import ChatOllama
 from dotenv import load_dotenv
 load_dotenv()
+import time
 
 
 
@@ -29,12 +30,14 @@ def vid_id(url : str) -> str:
 def get_llm(api : str | None = None):
         llm = ChatOllama(
         model="qwen3:4b",
-        temperature = 2.0,
+        temperature = 1.0,
         think = False,
         num_ctx=2048,
         repeat_penalty=1.1
         )
         return llm
+
+
     
 def verify_key(key : str) -> bool:
     try:
@@ -62,6 +65,7 @@ def validate_url(url : str) -> bool:
     
 
 def get_transcript(url : str) -> str | None:
+    t1 = time.time()
     try:
         ytt_api = get_yt_client()
 
@@ -73,22 +77,26 @@ def get_transcript(url : str) -> str | None:
         return transcript
     except:
         print("No caption available")
+    print(f'Transcript time - {time.time() - t1}')
 
 
 def load_chain(url: str, API_KEY : str | None = None):
+
+    
     
     transcript = get_transcript(url)
     if transcript is None:
         return None
     
-    splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=200)
+    splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
     chunks = splitter.create_documents([transcript])
 
     embeddings = HuggingFaceEmbeddings( model="BAAI/bge-small-en-v1.5")
 
     vector_store = FAISS.from_documents(
         embedding= embeddings,
-        documents=chunks
+        documents=chunks,
+        model_kwargs ={'device':'cuda'},
 
     )
 
@@ -133,4 +141,16 @@ def get_response(question : str, chain, retrive) -> str:
    respon = chain.invoke(question)
 
    print(retrive.invoke(question))
+   print(len(retrive.invoke(question)['context']))
+   
+   start = time.time()
+   docs = retrive.invoke(question)
+   print("Retrieval:", time.time() - start)
+
+
+   start = time.time()
+   response = chain.invoke(question)
+   print("Generation:", time.time() - start)
    return respon.content
+
+

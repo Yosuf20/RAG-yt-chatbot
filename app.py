@@ -57,5 +57,8 @@ if prompt:
         st.session_state.messages.append({"role" : "user", "content" : prompt})
 
     with st.chat_message("assistant"):
+        start = time.time()
+        # res = st.write_stream(st.session_state.chain.stream(prompt))
         res = st.write_stream(response_generator(prompt, st.session_state.chain, st.session_state.retrieve))
+        st.info(f"Responce time {time.time() - start} seconds")
         st.session_state.messages.append({"role" : "assistant" , "content" : res})
