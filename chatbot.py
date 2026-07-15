@@ -91,13 +91,14 @@ def load_chain(url: str, API_KEY : str | None = None):
     splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
     chunks = splitter.create_documents([transcript])
 
-    embeddings = HuggingFaceEmbeddings( model="BAAI/bge-small-en-v1.5")
+    embeddings = HuggingFaceEmbeddings( 
+        model="BAAI/bge-small-en-v1.5",
+        # model_kwargs ={'device':'cuda'}
+    )
 
     vector_store = FAISS.from_documents(
         embedding= embeddings,
         documents=chunks,
-        model_kwargs ={'device':'cuda'},
-
     )
 
     retriever = vector_store.as_retriever(
@@ -137,20 +138,18 @@ def load_chain(url: str, API_KEY : str | None = None):
     return chain, retrieve
 
 
-def get_response(question : str, chain, retrive) -> str:
-   respon = chain.invoke(question)
+# def get_response(question : str, chain, retrive) -> str:
+#    start = time.time()
 
-   print(retrive.invoke(question))
-   print(len(retrive.invoke(question)['context']))
-   
-   start = time.time()
-   docs = retrive.invoke(question)
-   print("Retrieval:", time.time() - start)
+#    docs = retrive.invoke(question)
+#    print(docs)
+#    print(len(docs['context']))
+#    print("Retrieval:", time.time() - start)
 
 
-   start = time.time()
-   response = chain.invoke(question)
-   print("Generation:", time.time() - start)
-   return respon.content
+#    start = time.time()
+#    response = chain.invoke(question)
+#    print("Generation:", time.time() - start)
+#    return response.content
 
 

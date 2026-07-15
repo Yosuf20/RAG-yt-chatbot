@@ -1,7 +1,7 @@
 import streamlit as st
 import random
 import time
-from chatbot import load_chain, get_response, verify_key, validate_url
+from chatbot import load_chain, verify_key, validate_url
 
 
 st.title("Youtube Chatbot")
@@ -32,11 +32,11 @@ if url:
                 st.sidebar.success("Ready!")
 
 
-def response_generator(ques, chain, retrieve):
-    response = get_response(ques, chain, retrieve)
-    for word in response.split():
-        yield word + " "
-        time.sleep(0.05)
+# def response_generator(ques, chain, retrieve):
+#     response = get_response(ques, chain, retrieve)
+#     for word in response.split():
+#         yield word + " "
+#         time.sleep(0.05)
     
 
 if "messages" not in st.session_state:
@@ -47,18 +47,22 @@ if "messages" not in st.session_state:
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
+        if "responce_time" in message:
+            st.caption(message['responce_time'])
 
 prompt = st.chat_input("Say Something")
 
 if prompt:
-
+    start = time.time()
     with st.chat_message("user"):
         st.markdown(prompt)
         st.session_state.messages.append({"role" : "user", "content" : prompt})
 
     with st.chat_message("assistant"):
-        start = time.time()
-        # res = st.write_stream(st.session_state.chain.stream(prompt))
-        res = st.write_stream(response_generator(prompt, st.session_state.chain, st.session_state.retrieve))
-        st.info(f"Responce time {time.time() - start} seconds")
-        st.session_state.messages.append({"role" : "assistant" , "content" : res})
+        
+        res = st.write_stream(st.session_state.chain.stream(prompt))
+        # res = st.write_stream(response_generator(prompt, st.session_state.chain, st.session_state.retrieve))
+        res_time = time.time() - start
+        st.info(f"Responce time {res_time} seconds")
+
+        st.session_state.messages.append({"role" : "assistant" , "content" : res, 'responce_time' : res_time})
