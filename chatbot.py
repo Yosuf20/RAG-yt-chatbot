@@ -1,4 +1,3 @@
-
 # !pip install langchain faiss-cpu tiktoken langchain_huggingface langchain_community langchain-core -q youtube-transcript-api python-dotenv langchain_groq
 from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled
 from langchain_text_splitters import RecursiveCharacterTextSplitter
