@@ -55,7 +55,7 @@ def validate_url(url : str) -> bool:
         yt = get_yt_client()
         trans_list = yt.fetch(
             video_id=vid_id(url),
-            languages=['en']
+            languages=['en', 'hi']
         )
         return True
     except Exception as e:
@@ -65,18 +65,22 @@ def validate_url(url : str) -> bool:
 
 def get_transcript(url : str) -> str | None:
     t1 = time.time()
-    try:
-        ytt_api = get_yt_client()
-
-        transcript_list = ytt_api.fetch(
+    ytt_api = get_yt_client()
+    
+    transcript_list = ytt_api.list(
             video_id = vid_id(url),
-            languages=['en']
             )
-        transcript = " ".join(chunk.text for chunk in transcript_list)
-        return transcript
+
+    try:
+        transcript = transcript_list.find_transcript(['en']).fetch()
+
     except:
-        print("No caption available")
+        hindi = transcript_list.find_transcript(['hi'])
+        transcript = hindi.translate('en').fetch()
+    
     print(f'Transcript time - {time.time() - t1}')
+
+    return " ".join(chunk.text for chunk in transcript)
 
 
 def load_chain(url: str, API_KEY : str | None = None):
