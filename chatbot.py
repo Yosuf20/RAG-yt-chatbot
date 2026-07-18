@@ -13,7 +13,7 @@ from langchain_ollama import ChatOllama
 from dotenv import load_dotenv
 load_dotenv()
 import time
-
+from deep_translator import GoogleTranslator
 
 
 def get_yt_client():
