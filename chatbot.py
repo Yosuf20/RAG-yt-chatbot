@@ -156,18 +156,18 @@ def load_chain(url: str, API_KEY : str | None = None):
     return chain, retrieve
 
 
-def get_response(question : str, chain, retrive) -> str:
-   start = time.time()
+# def get_response(question : str, chain, retrive) -> str:
+#    start = time.time()
 
-   docs = retrive.invoke(question)
-   print(docs)
-   print(len(docs['context']))
-   print("Retrieval:", time.time() - start)
+#    docs = retrive.invoke(question)
+#    print(docs)
+#    print(len(docs['context']))
+#    print("Retrieval:", time.time() - start)
 
 
-   start = time.time()
-   response = chain.invoke(question)
-   print("Generation:", time.time() - start)
-   return response.content
+#    start = time.time()
+#    response = chain.invoke(question)
+#    print("Generation:", time.time() - start)
+#    return response.content
 
 

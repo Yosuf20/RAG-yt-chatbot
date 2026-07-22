@@ -34,11 +34,11 @@ if url:
                 st.sidebar.success("Ready!")
 
 
-def response_generator(ques, chain, retrieve):
-    response = get_response(ques, chain, retrieve)
-    for word in response.split():
-        yield word + " "
-        time.sleep(0.05)
+# def response_generator(ques, chain, retrieve):
+#     response = get_response(ques, chain, retrieve)
+#     for word in response.split():
+#         yield word + " "
+#         time.sleep(0.05)
     
 
 if "messages" not in st.session_state:
