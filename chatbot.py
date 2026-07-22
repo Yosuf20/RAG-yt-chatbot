@@ -29,7 +29,7 @@ def vid_id(url : str) -> str:
 def get_llm(api : str | None = None):
         llm = ChatOllama(
         model="qwen3:4b",
-        temperature = 1.0,
+        temperature = 1.5,
         think = False,
         num_ctx=2048,
         repeat_penalty=1.1
@@ -37,7 +37,7 @@ def get_llm(api : str | None = None):
         return llm
 
 
-    
+
 def verify_key(key : str) -> bool:
     try:
         llm = ChatOllama(
@@ -70,22 +70,37 @@ def get_transcript(url : str) -> str | None:
     transcript_list = ytt_api.list(
             video_id = vid_id(url),
             )
-
+    
     try:
         transcript = transcript_list.find_transcript(['en']).fetch()
 
-    except:
-        hindi = transcript_list.find_transcript(['hi'])
-        transcript = hindi.translate('en').fetch()
-    
-    print(f'Transcript time - {time.time() - t1}')
+        return ''.join(chunk.text for chunk in transcript)
 
-    return " ".join(chunk.text for chunk in transcript)
+    except Exception as e:
+
+        transcript = ytt_api.fetch(video_id=vid_id(url), languages=['hi'])
+
+        translated = []
+
+        translator = GoogleTranslator(
+            source="auto",
+            target="en"
+        )
+
+        for chunk in transcript:
+            translated.append(
+                translator.translate(chunk.text)
+            )
+
+        english = ' '.join(translated)
+
+
+        print(f"Time Taken in Translation {time.time() - t1}")
+        return english
+        print(f"Error {e}")
 
 
 def load_chain(url: str, API_KEY : str | None = None):
-
-    
     
     transcript = get_transcript(url)
     if transcript is None:
@@ -105,7 +120,7 @@ def load_chain(url: str, API_KEY : str | None = None):
     )
 
     retriever = vector_store.as_retriever(
-        search_type='similarity',
+        search_type='mmr',
         search_kwargs={'k':4}
     )
 
@@ -141,18 +156,18 @@ def load_chain(url: str, API_KEY : str | None = None):
     return chain, retrieve
 
 
-# def get_response(question : str, chain, retrive) -> str:
-#    start = time.time()
+def get_response(question : str, chain, retrive) -> str:
+   start = time.time()
 
-#    docs = retrive.invoke(question)
-#    print(docs)
-#    print(len(docs['context']))
-#    print("Retrieval:", time.time() - start)
+   docs = retrive.invoke(question)
+   print(docs)
+   print(len(docs['context']))
+   print("Retrieval:", time.time() - start)
 
 
-#    start = time.time()
-#    response = chain.invoke(question)
-#    print("Generation:", time.time() - start)
-#    return response.content
+   start = time.time()
+   response = chain.invoke(question)
+   print("Generation:", time.time() - start)
+   return response.content
 
 
