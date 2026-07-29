@@ -1,14 +1,16 @@
 import streamlit as st
 import random
 import time
-from chatbot import load_chain, verify_key, validate_url, get_response
+from chatbot import load_chain, verify_key, validate_url
 
 
 
 
 st.title("Youtube Chatbot")
 
-url = st.sidebar.text_input("Enter Youtube Video Link", type="default")
+with st.sidebar:
+    url = st.text_input("Enter Youtube Video Link", type="default")
+    uploaded_file = st.file_uploader("Upload Your file")
 
 
 if url:
