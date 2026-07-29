@@ -1,7 +1,7 @@
 import streamlit as st
 import random
 import time
-from chatbot import load_chain, verify_key, validate_url
+from chatbot import load_chain, verify_key, validate_url, load_pdf, havepdf
 
 
 
@@ -10,8 +10,7 @@ st.title("Youtube Chatbot")
 
 with st.sidebar:
     url = st.text_input("Enter Youtube Video Link", type="default")
-    uploaded_file = st.file_uploader("Upload Your file")
-
+    uploaded_file = st.file_uploader("Upload Your file")   
 
 if url:
     if st.session_state.get("loaded_url") != url:
@@ -34,6 +33,21 @@ if url:
                 st.session_state.chain = chain
                 st.session_state.retrieve = retrieve
                 st.sidebar.success("Ready!")
+
+elif uploaded_file:
+        havepdf(uploaded_file)
+        answer = load_pdf(uploaded_file)
+        with st.spinner("Loading Transcript"):
+            chain, retrieve = load_chain(url)
+
+        if chain is None:
+            print("No Transcript Found")
+        else:
+            st.session_state.loaded_url = url
+            st.session_state.messages = []
+            st.session_state.chain = chain
+            st.session_state.retrieve = retrieve
+            st.sidebar.success("Ready!")
 
 
 # def response_generator(ques, chain, retrieve):
