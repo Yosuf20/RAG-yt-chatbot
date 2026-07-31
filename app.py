@@ -6,7 +6,7 @@ import hashlib
 
 
 
-st.title("Youtube Chatbot")
+st.title("RAG Chatbot")
 
 with st.sidebar:
     url = st.text_input("Enter Youtube Video Link", type="default")
@@ -38,7 +38,7 @@ if url:
 
 elif uploaded_file:
         file_hash = hashlib.md5(uploaded_file.getvalue()).hexdigest()
-        
+
         if st.session_state.get("file_hash") != file_hash:
             st.session_state["file_hash"] = file_hash 
 
@@ -65,7 +65,7 @@ elif uploaded_file:
 if "messages" not in st.session_state:
     st.session_state.messages = []
     with st.chat_message("assistant"):
-        st.markdown("Please Enter Vid Link")
+        st.markdown("Please Enter Video Link or Upload a File")
 
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
