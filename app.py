@@ -12,9 +12,6 @@ with st.sidebar:
     url = st.text_input("Enter Youtube Video Link", type="default")
     uploaded_file = st.file_uploader("Upload Your file") 
 
-
-
-file_hash = hashlib.md5(uploaded_file.getvalue()).hexdigest()
  
 
 if url:
@@ -40,6 +37,8 @@ if url:
                 st.sidebar.success("Ready!")
 
 elif uploaded_file:
+        file_hash = hashlib.md5(uploaded_file.getvalue()).hexdigest()
+        
         if st.session_state.get("file_hash") != file_hash:
             st.session_state["file_hash"] = file_hash 
 
