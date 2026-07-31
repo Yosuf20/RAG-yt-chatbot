@@ -8,6 +8,7 @@ from langchain_core.runnables import RunnableParallel, RunnableLambda, RunnableP
 from langchain_core.output_parsers import StrOutputParser
 from langchain_groq import ChatGroq
 from langchain_community.vectorstores import FAISS
+from langchain_community.retrievers import BM25Retriever
 from curl_cffi import requests as curl_requests
 import os
 from langchain_ollama import ChatOllama
@@ -129,6 +130,9 @@ def get_transcript(url : str) -> str | None:
         print(f"Error {e}")
 
 
+    
+
+
 def load_chain(script, url: str | None = None, API_KEY : str | None = None):
 
     if url:
@@ -157,6 +161,27 @@ def load_chain(script, url: str | None = None, API_KEY : str | None = None):
         search_kwargs={'k':4}
     )
 
+    bm25_retriever = BM25Retriever.from_documents(chunks)
+
+    def hybrid_retrieve(query):
+
+        vector_docs = retriever.invoke(query)
+        bm25_docs = bm25_retriever.invoke(query)
+
+        # Keep FAISS results first
+        combined = vector_docs.copy()
+
+        seen = {doc.page_content for doc in combined}
+
+        for doc in bm25_docs:
+            if doc.page_content not in seen:
+                combined.append(doc)
+                seen.add(doc.page_content)
+
+        return combined[:4]
+    
+
+
     prompt = PromptTemplate(
         template="""
         You are a helpful Youtube video chatbot
@@ -176,7 +201,7 @@ def load_chain(script, url: str | None = None, API_KEY : str | None = None):
         return context_text
 
     parallel_chain = RunnableParallel({
-        'context' : retriever | RunnableLambda(format_docs),
+        'context' : RunnableLambda(hybrid_retrieve) | RunnableLambda(format_docs),
         'question' : RunnablePassthrough()
     })
 
@@ -187,6 +212,8 @@ def load_chain(script, url: str | None = None, API_KEY : str | None = None):
 
     retrieve = parallel_chain
     return chain, retrieve
+
+
 
 
 # def get_response(question : str, chain, retrive) -> str:
