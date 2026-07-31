@@ -1,6 +1,7 @@
 # !pip install langchain faiss-cpu tiktoken langchain_huggingface langchain_community langchain-core -q youtube-transcript-api python-dotenv langchain_groq
 from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_community.document_loaders import PyMuPDFLoader
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnableParallel, RunnableLambda, RunnablePassthrough
@@ -14,6 +15,7 @@ from dotenv import load_dotenv
 load_dotenv()
 import time
 from deep_translator import GoogleTranslator
+import tempfile
 
 
 def get_yt_client():
@@ -26,6 +28,7 @@ def vid_id(url : str) -> str:
     video_id = url.split("=")[1].split("&")[0]
     return video_id
 
+
 def get_llm(api : str | None = None):
         llm = ChatOllama(
         model="qwen3:4b",
@@ -35,6 +38,32 @@ def get_llm(api : str | None = None):
         repeat_penalty=1.1
         )
         return llm
+
+# Loading Pdf 
+
+def havepdf():
+    return 
+
+
+def load_pdf(uploaded_file):
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+        tmp.write(uploaded_file.getvalue())
+        temp_path = tmp.name
+
+    loader = PyMuPDFLoader(file_path=temp_path, extract_images=True, )
+    documents = loader.load()
+
+    # print(len(documents))
+    # print(documents[0].page_content)
+    # print(documents[0].metadata)
+    # print("---------------------------------")
+    # print(documents[1].page_content)
+    # print(documents[2].metadata)
+
+    text = "\n".join(chunk.page_content for chunk in documents)
+
+    return text
+
 
 
 
@@ -100,13 +129,17 @@ def get_transcript(url : str) -> str | None:
         print(f"Error {e}")
 
 
-def load_chain(url: str, API_KEY : str | None = None):
-    
-    transcript = get_transcript(url)
-    if transcript is None:
-        return None
-    
+def load_chain(script, url: str | None = None, API_KEY : str | None = None):
+
+    if url:
+        transcript = get_transcript(url)
+        if transcript is None:
+            return None
+    else:
+        transcript = load_pdf(script)
+        
     splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
+    print(type(transcript))
     chunks = splitter.create_documents([transcript])
 
     embeddings = HuggingFaceEmbeddings( 
