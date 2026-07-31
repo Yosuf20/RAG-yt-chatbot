@@ -35,10 +35,8 @@ if url:
                 st.sidebar.success("Ready!")
 
 elif uploaded_file:
-        havepdf(uploaded_file)
-        answer = load_pdf(uploaded_file)
         with st.spinner("Loading Transcript"):
-            chain, retrieve = load_chain(url)
+            chain, retrieve = load_chain(uploaded_file)
 
         if chain is None:
             print("No Transcript Found")
