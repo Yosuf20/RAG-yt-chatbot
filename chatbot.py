@@ -40,11 +40,6 @@ def get_llm(api : str | None = None):
         )
         return llm
 
-# Loading Pdf 
-
-def havepdf():
-    return 
-
 
 def load_pdf(uploaded_file):
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
@@ -130,6 +125,8 @@ def get_transcript(url : str) -> str | None:
         print(f"Error {e}")
 
 
+def vector_store(docs, embeddings):
+    pass
     
 
 
