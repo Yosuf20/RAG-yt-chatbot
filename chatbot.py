@@ -7,7 +7,7 @@ from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnableParallel, RunnableLambda, RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 from langchain_groq import ChatGroq
-from langchain_community.vectorstores import FAISS
+from langchain_community.vectorstores import FAISS, Chroma
 from langchain_community.retrievers import BM25Retriever
 from curl_cffi import requests as curl_requests
 import os
@@ -121,23 +121,18 @@ def get_transcript(url : str) -> str | None:
 
 
         print(f"Time Taken in Translation {time.time() - t1}")
-        return english
         print(f"Error {e}")
+        return english
 
 
-def vector_store(docs, embeddings):
-    pass
-    
-
-
-def load_chain(script, url: str | None = None, API_KEY : str | None = None):
+def load_chain(url: str | None = None, file = None, v_store = None, API_KEY : str | None = None):
 
     if url:
         transcript = get_transcript(url)
         if transcript is None:
             return None
-    else:
-        transcript = load_pdf(script)
+    elif file:
+        transcript = load_pdf(file)
         
     splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
     print(type(transcript))
@@ -148,10 +143,18 @@ def load_chain(script, url: str | None = None, API_KEY : str | None = None):
         # model_kwargs ={'device':'cuda'}
     )
 
-    vector_store = FAISS.from_documents(
-        embedding= embeddings,
-        documents=chunks,
-    )
+    if v_store == 'ChromeDB':
+        vector_store = Chroma.from_documents(
+            embedding_function = embeddings,
+            documents= chunks,
+            collection_name='my_collection'
+        )
+    else:
+        vector_store = FAISS.from_documents(
+            embedding= embeddings,
+            documents=chunks,
+        )
+    
 
     retriever = vector_store.as_retriever(
         search_type='mmr',
@@ -161,7 +164,6 @@ def load_chain(script, url: str | None = None, API_KEY : str | None = None):
     bm25_retriever = BM25Retriever.from_documents(chunks)
 
     def hybrid_retrieve(query):
-
         vector_docs = retriever.invoke(query)
         bm25_docs = bm25_retriever.invoke(query)
 
