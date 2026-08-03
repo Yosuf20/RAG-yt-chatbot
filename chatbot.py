@@ -19,10 +19,12 @@ from deep_translator import GoogleTranslator
 import tempfile
 
 
+
+
+
 def get_yt_client():
     session = curl_requests.Session(impersonate="chrome110")
     return YouTubeTranscriptApi(http_client=session)
-
 
 
 def vid_id(url : str) -> str:
@@ -145,7 +147,7 @@ def load_chain(url: str | None = None, file = None, v_store = None, API_KEY : st
 
     if v_store == 'ChromeDB':
         vector_store = Chroma.from_documents(
-            embedding_function = embeddings,
+            embedding = embeddings,
             documents= chunks,
             collection_name='my_collection'
         )
