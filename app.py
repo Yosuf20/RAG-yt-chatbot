@@ -5,7 +5,6 @@ from chatbot import load_chain, verify_key, validate_url, load_pdf
 import hashlib
 
 
-
 st.title("RAG Chatbot")
 
 vec_store = ['FAISS', 'ChromeDB', 'PineCone', '']
@@ -16,7 +15,6 @@ with st.sidebar:
     vector_store = st.selectbox('Select a Vector Store',
                                 options=vec_store)
 
- 
 
 if url:
     if st.session_state.get("loaded_url") != url:
@@ -29,7 +27,7 @@ if url:
 
         else:
             with st.spinner("Loading Transcript"):
-                chain, retrieve = load_chain(url)
+                chain, retrieve = load_chain(url=url, v_store=vector_store)
 
             if chain is None:
                 print("No Transcript Found")
@@ -45,10 +43,9 @@ elif uploaded_file:
 
         if st.session_state.get("file_hash") != file_hash:
             st.session_state["file_hash"] = file_hash 
-
     
             with st.spinner("Loading Transcript"):
-                chain, retrieve = load_chain(uploaded_file)
+                chain, retrieve = load_chain(file=uploaded_file, v_store=vector_store)
 
             if chain is None:
                 print("No Transcript Found")
