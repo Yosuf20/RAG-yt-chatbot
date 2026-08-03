@@ -1,16 +1,20 @@
 import streamlit as st
 import random
 import time
-from chatbot import load_chain, verify_key, validate_url, load_pdf, havepdf
+from chatbot import load_chain, verify_key, validate_url, load_pdf
 import hashlib
 
 
 
 st.title("RAG Chatbot")
 
+vec_store = ['FAISS', 'ChromeDB', 'PineCone', '']
+
 with st.sidebar:
     url = st.text_input("Enter Youtube Video Link", type="default")
     uploaded_file = st.file_uploader("Upload Your file") 
+    vector_store = st.selectbox('Select a Vector Store',
+                                options=vec_store)
 
  
 
