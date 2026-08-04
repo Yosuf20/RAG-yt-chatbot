@@ -87,26 +87,6 @@ streamlit run app.py
 
 ---
 
-## 📦 Dependencies
-
-```txt
-streamlit
-langchain
-langchain-core
-langchain-community
-langchain-huggingface
-langchain-ollama
-langchain-text-splitters
-faiss-cpu
-youtube-transcript-api
-curl_cffi
-deep-translator
-pymupdf
-rank_bm25
-python-dotenv
-tiktoken
-```
-
 Install all at once:
 ```bash
 pip install -r requirements.txt
