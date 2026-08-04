@@ -12,48 +12,50 @@ vec_store = ['FAISS', 'ChromeDB', 'PineCone', '']
 with st.sidebar:
     url = st.text_input("Enter Youtube Video Link", type="default")
     uploaded_file = st.file_uploader("Upload Your file") 
-    vector_store = st.selectbox('Select a Vector Store',
+    vector_store = st.selectbox('Select a Vector Database',
                                 options=vec_store)
 
+    button = st.button("Start")
 
-if url:
-    if st.session_state.get("loaded_url") != url:
+if button:
+    if url:
+        if st.session_state.get("loaded_url") != url:
 
-        with st.sidebar.spinner("Verifying Youtube Link Url..."):
-            valid = validate_url(url)
+            with st.sidebar.spinner("Verifying Youtube Link Url..."):
+                valid = validate_url(url)
 
-        if not valid:
-            st.sidebar.error("Invalid Youtube Link. Pls Enter a Valid URL")
+            if not valid:
+                st.sidebar.error("Invalid Youtube Link. Pls Enter a Valid URL")
 
-        else:
-            with st.spinner("Loading Transcript"):
-                chain, retrieve = load_chain(url=url, v_store=vector_store)
-
-            if chain is None:
-                print("No Transcript Found")
             else:
-                st.session_state.loaded_url = url
-                st.session_state.messages = []
-                st.session_state.chain = chain
-                st.session_state.retrieve = retrieve
-                st.sidebar.success("Ready!")
+                with st.spinner("Loading Transcript"):
+                    chain, retrieve = load_chain(url=url, v_store=vector_store)
 
-elif uploaded_file:
-        file_hash = hashlib.md5(uploaded_file.getvalue()).hexdigest()
+                if chain is None:
+                    print("No Transcript Found")
+                else:
+                    st.session_state.loaded_url = url
+                    st.session_state.messages = []
+                    st.session_state.chain = chain
+                    st.session_state.retrieve = retrieve
+                    st.sidebar.success("Ready!")
 
-        if st.session_state.get("file_hash") != file_hash:
-            st.session_state["file_hash"] = file_hash 
-    
-            with st.spinner("Loading Transcript"):
-                chain, retrieve = load_chain(file=uploaded_file, v_store=vector_store)
+    elif uploaded_file:
+            file_hash = hashlib.md5(uploaded_file.getvalue()).hexdigest()
 
-            if chain is None:
-                print("No Transcript Found")
-            else:
-                st.session_state.messages = []
-                st.session_state.chain = chain
-                st.session_state.retrieve = retrieve
-                st.sidebar.success("Ready!")
+            if st.session_state.get("file_hash") != file_hash:
+                st.session_state["file_hash"] = file_hash 
+        
+                with st.spinner("Loading Transcript"):
+                    chain, retrieve = load_chain(file=uploaded_file, v_store=vector_store)
+
+                if chain is None:
+                    print("No Transcript Found")
+                else:
+                    st.session_state.messages = []
+                    st.session_state.chain = chain
+                    st.session_state.retrieve = retrieve
+                    st.sidebar.success("Ready!")
 
 
 # def response_generator(ques, chain, retrieve):
