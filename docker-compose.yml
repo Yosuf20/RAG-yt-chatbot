@@ -1,0 +1,34 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+
+  ollama:
+    image: ollama/ollama
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama   # saves downloaded models
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]  # use your RTX 3050
+
+  app:
+    build: .
+    container_name: rag-chatbot
+    ports:
+      - "8501:8501"
+    env_file:
+      - .env
+    depends_on:
+      - ollama    # waits for ollama to start first
+    environment:
+      - OLLAMA_HOST=http://ollama:11434  # points to ollama container
+
+volumes:
+  ollama_data:

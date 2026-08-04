@@ -1,0 +1,8 @@
+venv/
+.env
+__pylance__/
+*.pyc
+.devcontainer/
+document_loader/
+check.py
+test.py
