@@ -1,4 +1,6 @@
 # !pip install langchain faiss-cpu tiktoken langchain_huggingface langchain_community langchain-core -q youtube-transcript-api python-dotenv langchain_groq
+from dotenv import load_dotenv
+import os
 from youtube_transcript_api import YouTubeTranscriptApi, TranscriptsDisabled
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyMuPDFLoader
@@ -12,13 +14,18 @@ from langchain_community.retrievers import BM25Retriever
 from curl_cffi import requests as curl_requests
 import os
 from langchain_ollama import ChatOllama
-from dotenv import load_dotenv
-load_dotenv()
 import time
 from deep_translator import GoogleTranslator
 import tempfile
+from langchain_pinecone import PineconeVectorStore
+from pinecone import Pinecone
+
+load_dotenv()
 
 
+pc = Pinecone(
+    api_key=os.getenv('PINECONE_API_KEY')
+)
 
 
 
@@ -150,6 +157,12 @@ def load_chain(url: str | None = None, file = None, v_store = None, API_KEY : st
             embedding = embeddings,
             documents= chunks,
             collection_name='my_collection'
+        )
+    elif v_store == 'PineCone':
+        vector_store = PineconeVectorStore.from_documents(
+            embedding=embeddings,
+            documents=chunks,
+            index_name ='youtube-rag'
         )
     else:
         vector_store = FAISS.from_documents(
