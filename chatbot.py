@@ -42,6 +42,7 @@ def vid_id(url : str) -> str:
 def get_llm(api : str | None = None):
         llm = ChatOllama(
         model="qwen3:4b",
+        base_url=os.getenv("OLLAMA_HOST", "http://localhost:11434"),
         temperature = 1.5,
         think = False,
         num_ctx=2048,
