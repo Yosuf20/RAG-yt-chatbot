@@ -13,6 +13,7 @@ A locally running RAG (Retrieval Augmented Generation) chatbot that lets you cha
 - 🦙 Fully local LLM using Ollama (no API key needed)
 - ⚡ Fast embeddings with HuggingFace `bge-small-en-v1.5`
 - 🛡️ YouTube IP block bypass using `curl_cffi`
+- 🐳 Docker support for containerized deployment
 
 ---
 
@@ -29,6 +30,8 @@ A locally running RAG (Retrieval Augmented Generation) chatbot that lets you cha
 | PDF Loading | PyMuPDF |
 | Framework | LangChain |
 | UI | Streamlit |
+| Monitoring | LangSmith |
+| Containerization | Docker |
 
 ---
 
@@ -44,8 +47,8 @@ A locally running RAG (Retrieval Augmented Generation) chatbot that lets you cha
 
 **1. Clone the repository:**
 ```bash
-git clone https://github.com/yourusername/youtube-rag-chatbot.git
-cd youtube-rag-chatbot
+git clone https://github.com/Yosuf20/RAG-yt-chatbot.git
+cd RAG-yt-chatbot
 ```
 
 **2. Create and activate virtual environment:**
@@ -73,7 +76,10 @@ ollama pull qwen3:4b
 **5. Create `.env` file:**
 ```bash
 # .env
-GROQ_API_KEY=your_key_here   # optional, only if using Groq
+LANGCHAIN_TRACING_V2=true
+LANGCHAIN_API_KEY=your_langsmith_key
+LANGCHAIN_PROJECT=your_project_name
+LANGCHAIN_ENDPOINT=https://api.smith.langchain.com
 ```
 
 ---
@@ -87,10 +93,67 @@ streamlit run app.py
 
 ---
 
-Install all at once:
+## 🐳 Docker Setup
+
+Run the entire app including Ollama in containers — no manual installation needed.
+
+**Requirements:**
+- [Docker Desktop](https://docker.com) installed
+- NVIDIA GPU with CUDA support (for GPU acceleration)
+
+**1. Build and start all containers:**
 ```bash
-pip install -r requirements.txt
+docker compose up --build
 ```
+
+**2. Pull the model inside the Ollama container (first time only):**
+```bash
+docker exec ollama ollama pull qwen3:4b
+```
+
+**3. Open the app:**
+```
+http://localhost:8501
+```
+
+**Useful Docker commands:**
+```bash
+docker compose up --build    # build and start
+docker compose up -d         # run in background
+docker compose down          # stop everything
+docker compose logs -f       # view logs
+docker system prune -a       # free up storage
+```
+
+> **Note:** First run downloads all images (~3-4GB). Every run after that works offline with no internet needed (except for YouTube transcript fetching).
+
+**🧹 Cleaning up Docker storage:**
+```bash
+# stop and remove containers
+docker compose down
+
+# remove all unused images (frees ~3-4GB)
+docker system prune -a
+
+# remove volumes including downloaded models (frees ~2.5GB)
+docker volume prune
+
+# nuclear option - remove everything
+docker system prune -a --volumes
+```
+
+> **Warning:** `docker volume prune` deletes the downloaded Qwen3 model — you'll need to pull it again with `docker exec ollama ollama pull qwen3:4b`
+
+---
+
+## 📊 Evaluation
+
+**LangSmith** is integrated for full pipeline observability. Every query is traced end-to-end, providing visibility into:
+
+- Retrieval time (Hybrid BM25 + MMR search)
+- Prompt formatting time
+- LLM generation time (Qwen3 4B via Ollama)
+- Total end-to-end response time
 
 ---
 
@@ -149,8 +212,10 @@ YouTube blocks cloud/VPN IPs. Solutions:
 
 **Ollama not recognized in terminal:**
 ```bash
-# Add to PATH or use full path
+# Windows - use full path
 "C:\Users\YourName\AppData\Local\Programs\Ollama\ollama.exe" pull qwen3:4b
+
+# Or add to PATH via Environment Variables
 ```
 
 **Slow responses:**
@@ -161,17 +226,26 @@ YouTube blocks cloud/VPN IPs. Solutions:
 - Close other heavy applications to free RAM
 ```
 
+**Docker GPU not working:**
+```bash
+# verify NVIDIA container toolkit is installed
+nvidia-smi
+docker run --gpus all nvidia/cuda:11.0-base nvidia-smi
+```
+
 ---
 
 ## 📁 Project Structure
 
 ```
-youtube-rag-chatbot/
-├── app.py          # Streamlit UI
-├── chatbot.py      # RAG pipeline
-├── .env            # API keys (never commit this)
+RAG-yt-chatbot/
+├── app.py                # Streamlit UI
+├── chatbot.py            # RAG pipeline
+├── Dockerfile            # Docker image config
+├── docker-compose.yml    # Multi-container setup
+├── requirements.txt      # Python dependencies
+├── .env                  # API keys (never commit this)
 ├── .gitignore
-├── requirements.txt
 └── README.md
 ```
 
@@ -183,3 +257,4 @@ youtube-rag-chatbot/
 - [Ollama](https://ollama.com)
 - [youtube-transcript-api](https://github.com/jdepoix/youtube-transcript-api)
 - [HuggingFace](https://huggingface.co)
+- [LangSmith](https://smith.langchain.com)
